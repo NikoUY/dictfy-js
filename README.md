@@ -2,6 +2,8 @@
 
 `dictify-js` is a tiny pure-Python utility intended for scraping: it scans JavaScript/TypeScript source and extracts only the object/array literals that can be converted safely into Python data structures. Invalid JS constructs (functions, computed keys, spreads, identifier values, template literals, etc.) are skipped, so the results stay clean and predictable.
 
+> ⚠️ This project is provided as-is for my personal use and won’t be actively maintained beyond that scope. However, I welcome PRs that include concrete tests to demonstrate the proposed behavior changes.
+
 ## Features
 
 - Parses raw JS/TS source or files and collects every top-level object literal (arrays are ignored unless nested inside an object).
