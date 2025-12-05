@@ -136,6 +136,79 @@ class Parser:
 
         return None
 
+    def read_identifier(self) -> str | None:
+        """Read a JavaScript identifier."""
+        self.skip_to_valid()
+        
+        character = self.current
+        if not (character.isalpha() or character in "_$"):
+            return None
+            
+        start = self.index
+        while not self.end_of_file:
+            character = self.current
+            if character.isalnum() or character in "_$":
+                self.advance()
+            else:
+                break
+        return self.text[start:self.index]
+
+    def try_parse_assignment(self) -> tuple[str, dict | list] | None:
+        """
+        Try to parse a variable assignment like:
+        const name = { ... }
+        let name = { ... }
+        var name = { ... }
+        
+        Returns (variable_name, parsed_structure) or None
+        """
+        saved_index = self.index
+        self.skip_to_valid()
+        
+        # Check for const/let/var
+        if self.startswith("const"):
+            self.advance(5)
+        elif self.startswith("let"):
+            self.advance(3)
+        elif self.startswith("var"):
+            self.advance(3)
+        else:
+            self.index = saved_index
+            return None
+        
+        # Must be followed by whitespace
+        if not self.end_of_file and self.current not in " \t\n\r":
+            self.index = saved_index
+            return None
+        
+        # Read variable name
+        var_name = self.read_identifier()
+        if not var_name:
+            self.index = saved_index
+            return None
+        
+        self.skip_to_valid()
+        
+        # Must have = sign
+        if self.current != "=":
+            self.index = saved_index
+            return None
+        
+        self.advance()  # Skip =
+        self.skip_to_valid()
+        
+        # Parse the structure
+        if self.current not in "{[":
+            self.index = saved_index
+            return None
+        
+        structure = self.parse_structure()
+        if structure is None:
+            self.index = saved_index
+            return None
+        
+        return (var_name, structure)
+
     def read_string(self) -> str | None:
         """Read a string literal ('...' or \"...\")."""
         quote = self.current
