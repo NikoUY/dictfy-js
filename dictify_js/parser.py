@@ -189,6 +189,11 @@ class Parser:
         
         self.skip_to_valid()
         
+         # Skip TypeScript type annotation before the "="
+        if self.current == ":":
+            self.skip_invalid("=")
+            self.index -= 1 # Return to = for the next step
+
         # Must have = sign
         if self.current != "=":
             self.index = saved_index
